@@ -1,3 +1,4 @@
+pub mod dynamic_bit_set;
 pub mod inline_bit_set;
 pub mod word;
 

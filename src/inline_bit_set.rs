@@ -261,7 +261,6 @@ impl<'a, const WORDS: usize, W: Word> Iterator for InlineBitSetIterator<'a, WORD
         next_bit
     }
 }
-
 impl<'a, const WORDS: usize, W: Word> IntoIterator for &'a InlineBitSet<WORDS, W> {
     type Item = usize;
     type IntoIter = InlineBitSetIterator<'a, WORDS, W>;
@@ -284,7 +283,6 @@ impl<const WORDS: usize, W: Word> BitOrAssign<&Self> for InlineBitSet<WORDS, W> 
         }
     }
 }
-
 impl<const WORDS: usize, W: Word> BitAndAssign<&Self> for InlineBitSet<WORDS, W> {
     fn bitand_assign(&mut self, rhs: &Self) {
         for i in 0..WORDS {
@@ -292,7 +290,6 @@ impl<const WORDS: usize, W: Word> BitAndAssign<&Self> for InlineBitSet<WORDS, W>
         }
     }
 }
-
 impl<const WORDS: usize, W: Word> BitXorAssign<&Self> for InlineBitSet<WORDS, W> {
     fn bitxor_assign(&mut self, rhs: &Self) {
         for i in 0..WORDS {
@@ -311,7 +308,6 @@ impl<const WORDS: usize, W: Word> BitOr for &InlineBitSet<WORDS, W> {
         result
     }
 }
-
 impl<const WORDS: usize, W: Word> BitAnd for &InlineBitSet<WORDS, W> {
     type Output = InlineBitSet<WORDS, W>;
     fn bitand(self, rhs: Self) -> Self::Output {
@@ -322,7 +318,6 @@ impl<const WORDS: usize, W: Word> BitAnd for &InlineBitSet<WORDS, W> {
         result
     }
 }
-
 impl<const WORDS: usize, W: Word> BitXor for &InlineBitSet<WORDS, W> {
     type Output = InlineBitSet<WORDS, W>;
     fn bitxor(self, rhs: Self) -> Self::Output {
@@ -333,7 +328,6 @@ impl<const WORDS: usize, W: Word> BitXor for &InlineBitSet<WORDS, W> {
         result
     }
 }
-
 impl<const WORDS: usize, W: Word> Not for &InlineBitSet<WORDS, W> {
     type Output = InlineBitSet<WORDS, W>;
     fn not(self) -> Self::Output {
