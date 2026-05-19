@@ -1,6 +1,6 @@
 # soup
 
-hardware-conscious bit sets
+hardware-conscious collections
 
 ## Installation
 
