@@ -1,5 +1,7 @@
-mod handle_map;
+mod dense_handle_map;
+mod handle;
 mod packed_option;
 
-pub use handle_map::HandleMap;
-pub use packed_option::{PackedOption, ReservedValue};
+pub use dense_handle_map::DenseHandleMap;
+pub use handle::Handle;
+pub use packed_option::PackedOption;
