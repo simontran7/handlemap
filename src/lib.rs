@@ -9,10 +9,10 @@ macro_rules! handle_impl {
 
         impl $crate::handle_maps::Handle for $name {
             fn new(i: usize) -> Self { Self(i as u32) }
-            fn index(self) -> usize { self.0 as usize }
+            fn index(&self) -> usize { self.0 as usize }
         }
 
-        impl $crate::handle_maps::packed_option::ReservedValue for $name {
+        impl $crate::handle_maps::ReservedValue for $name {
             fn reserved() -> Self {
                 Self(u32::MAX)
             }
