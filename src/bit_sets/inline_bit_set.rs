@@ -1,4 +1,4 @@
-use crate::word::Word;
+use crate::bit_sets::word::Word;
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not, Shl, Shr};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
