@@ -2,6 +2,11 @@
 
 hardware-conscious collections
 
+## Ingredients
+
+- `soup::bit_sets`: `InlineBitSet`, `DynamicBitSet`
+- `soup::handle_maps`: `HandleMap`, `SideHandleMap`
+
 ## Installation
 
 Add the following to your project's `Cargo.toml` file:
