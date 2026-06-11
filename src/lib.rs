@@ -12,7 +12,7 @@ macro_rules! handle_impl {
             fn index(&self) -> usize { self.0 as usize }
         }
 
-        impl $crate::handle_maps::ReservedValue for $name {
+        impl $crate::handle_map::ReservedValue for $name {
             fn reserved() -> Self {
                 Self(u32::MAX)
             }
