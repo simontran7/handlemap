@@ -1,5 +1,5 @@
-pub mod bit_sets;
-pub mod handle_maps;
+pub mod bit_set;
+pub mod handle_map;
 
 #[macro_export]
 macro_rules! handle_impl {
