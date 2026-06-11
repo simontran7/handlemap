@@ -7,7 +7,7 @@ macro_rules! handle_impl {
         #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
         $vis struct $name(u32);
 
-        impl $crate::handle_maps::Handle for $name {
+        impl $crate::handle_map::Handle for $name {
             fn new(i: usize) -> Self { Self(i as u32) }
             fn index(&self) -> usize { self.0 as usize }
         }
