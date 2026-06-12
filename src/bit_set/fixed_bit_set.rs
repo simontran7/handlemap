@@ -1,5 +1,5 @@
 use crate::bit_set::word::Word;
-use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not, Shl, Shr};
+use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct FixedBitSet<const WORDS: usize, W: Word = u64> {
