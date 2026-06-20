@@ -1,13 +1,12 @@
-use std::fmt;
 use std::marker::PhantomData;
 use std::ops::{Index, IndexMut};
-use std::slice;
-
+use std::{fmt, mem, slice};
 use super::Handle;
 
 #[derive(Clone)]
-pub struct HandleMap<K, V> {
+pub struct SideHandleMap<K, V> {
     data: Vec<V>,
+    default: V,
     _marker: PhantomData<K>,
 }
 
@@ -26,41 +25,44 @@ pub struct IntoIter<K, V> {
     _marker: PhantomData<K>,
 }
 
-impl<K: Handle, V> HandleMap<K, V> {
-    pub fn new() -> Self {
+impl<K: Handle, V> SideHandleMap<K, V> {
+    pub fn new() -> Self where V: Clone + Default {
         Self {
             data: Vec::new(),
+            default: Default::default(),
             _marker: PhantomData,
         }
     }
 
-    pub fn with_capacity(capacity: usize) -> Self {
+    pub fn with_capacity(capacity: usize) -> Self where V: Clone + Default {
         Self {
             data: Vec::with_capacity(capacity),
+            default: Default::default(),
             _marker: PhantomData,
         }
     }
 
-    pub fn next_key(&self) -> K {
-        K::new(self.data.len())
+    pub fn with_default(default: V) -> Self {
+        Self {
+            data: Vec::new(),
+            default,
+            _marker: PhantomData,
+        }
     }
 
-    pub fn last(&self) -> Option<(K, &V)> {
-        let len = self.data.len();
-        let last = self.data.last()?;
-        Some((K::new(len - 1), last))
+    pub fn add(&mut self, key: K, value: V) -> Option<V> where V: Clone {
+        let index = key.index();
+        if index < self.data.len() {
+            Some(mem::replace(&mut self.data[index], value))
+        } else {
+            self.data.resize(index + 1, self.default.clone());
+            self.data[index] = value;
+            None
+        }
     }
 
-    pub fn last_mut(&mut self) -> Option<(K, &mut V)> {
-        let len = self.data.len();
-        let last = self.data.last_mut()?;
-        Some((K::new(len - 1), last))
-    }
-
-    pub fn add(&mut self, value: V) -> K {
-        let index = self.data.len();
-        self.data.push(value);
-        K::new(index)
+    pub fn resize(&mut self, n: usize) where V: Clone {
+        self.data.resize(n, self.default.clone());
     }
 
     pub fn get(&self, key: K) -> Option<&V> {
@@ -71,8 +73,13 @@ impl<K: Handle, V> HandleMap<K, V> {
         self.data.get_mut(key.index())
     }
 
-    pub fn contains_key(&self, k: K) -> bool {
-        k.index() < self.data.len()
+    pub fn remove(&mut self, key: K) -> Option<V> where V: Clone {
+        let index = key.index();
+        if index < self.data.len() {
+            Some(mem::replace(&mut self.data[index], self.default.clone()))
+        } else {
+            None
+        }
     }
 
     pub fn count(&self) -> usize {
@@ -115,29 +122,29 @@ impl<K: Handle, V> HandleMap<K, V> {
 }
 
 // for `map[k]`
-impl<K: Handle, V> Index<K> for HandleMap<K, V> {
+impl<K: Handle, V> Index<K> for SideHandleMap<K, V> {
     type Output = V;
-    fn index(&self, index: K) -> &V {
-        &self.data[index.index()]
+    fn index(&self, k: K) -> &V {
+        self.data.get(k.index()).unwrap_or(&self.default)
     }
 }
 
 // for `map[k] = v`
-impl<K: Handle, V> IndexMut<K> for HandleMap<K, V> {
+impl<K: Handle, V> IndexMut<K> for SideHandleMap<K, V> {
     fn index_mut(&mut self, index: K) -> &mut V {
         &mut self.data[index.index()]
     }
 }
 
-// for `HandleMap::default()`
-impl<K: Handle, V> Default for HandleMap<K, V> {
+// for `SideHandleMap::default()`
+impl<K: Handle, V: Clone + Default> Default for SideHandleMap<K, V> {
     fn default() -> Self {
         Self::new()
     }
 }
 
 // for `(k, v) in map`
-impl<K: Handle, V> IntoIterator for HandleMap<K, V> {
+impl<K: Handle, V> IntoIterator for SideHandleMap<K, V> {
     type Item = (K, V);
     type IntoIter = IntoIter<K, V>;
 
@@ -150,7 +157,7 @@ impl<K: Handle, V> IntoIterator for HandleMap<K, V> {
 }
 
 // for `(k, v) in &map`
-impl<'a, K: Handle, V> IntoIterator for &'a HandleMap<K, V> {
+impl<'a, K: Handle, V> IntoIterator for &'a SideHandleMap<K, V> {
     type Item = (K, &'a V);
     type IntoIter = Iter<'a, K, V>;
 
@@ -160,7 +167,7 @@ impl<'a, K: Handle, V> IntoIterator for &'a HandleMap<K, V> {
 }
 
 // for `(k, v) in &mut map`
-impl<'a, K: Handle, V> IntoIterator for &'a mut HandleMap<K, V> {
+impl<'a, K: Handle, V> IntoIterator for &'a mut SideHandleMap<K, V> {
     type Item = (K, &'a mut V);
     type IntoIter = IterMut<'a, K, V>;
 
@@ -169,25 +176,8 @@ impl<'a, K: Handle, V> IntoIterator for &'a mut HandleMap<K, V> {
     }
 }
 
-// for `let map: HandleMap<K, V> = values.collect()`
-impl<K: Handle, V> FromIterator<V> for HandleMap<K, V> {
-    fn from_iter<T: IntoIterator<Item = V>>(iter: T) -> Self {
-        Self {
-            data: Vec::from_iter(iter),
-            _marker: PhantomData,
-        }
-    }
-}
-
-// for `map.extend(<more values>)`
-impl<K: Handle, V> Extend<V> for HandleMap<K, V> {
-    fn extend<T: IntoIterator<Item = V>>(&mut self, iter: T) {
-        self.data.extend(iter);
-    }
-}
-
 // for `println!("{:?}", map)`
-impl<K: Handle + fmt::Debug, V: fmt::Debug> fmt::Debug for HandleMap<K, V> {
+impl<K: Handle + fmt::Debug, V: fmt::Debug> fmt::Debug for SideHandleMap<K, V> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_map().entries(self.iter()).finish()
     }
