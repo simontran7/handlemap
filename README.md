@@ -4,8 +4,8 @@ hardware-conscious collections
 
 ## Ingredients
 
-- `soup::bit_set`: `FixedBitSet`, `DynamicBitSet`
-- `soup::list`: `FixedArrayList`, `SmallArrayList`
+- `soup::bit_set`: `StaticBitSet`, `DynamicBitSet`
+- `soup::list`: `StaticArrayList`, `SmallArrayList`
 - `soup::handle_map`: `HandleMap`, `SideHandleMap`
 
 ## Installation
