@@ -2,16 +2,16 @@ use crate::bit_set::word::Word;
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-pub struct FixedBitSet<const WORDS: usize, W: Word = u64> {
+pub struct StaticBitSet<const WORDS: usize, W: Word = u64> {
     words: [W; WORDS],
 }
 
-pub struct FixedBitSetIterator<'a, const WORDS: usize, W: Word> {
-    bitset: &'a FixedBitSet<WORDS, W>,
+pub struct StaticBitSetIterator<'a, const WORDS: usize, W: Word> {
+    bitset: &'a StaticBitSet<WORDS, W>,
     last_yielded: Option<usize>,
 }
 
-impl<const WORDS: usize, W: Word> FixedBitSet<WORDS, W> {
+impl<const WORDS: usize, W: Word> StaticBitSet<WORDS, W> {
     /// Creates a new empty bit set.
     pub fn new() -> Self {
         Self {
@@ -241,15 +241,15 @@ impl<const WORDS: usize, W: Word> FixedBitSet<WORDS, W> {
     }
 
     /// Returns an iterator over the set bits, in ascending order.
-    pub fn iter(&self) -> FixedBitSetIterator<'_, WORDS, W> {
-        FixedBitSetIterator {
+    pub fn iter(&self) -> StaticBitSetIterator<'_, WORDS, W> {
+        StaticBitSetIterator {
             bitset: self,
             last_yielded: None,
         }
     }
 }
 
-impl<'a, const WORDS: usize, W: Word> Iterator for FixedBitSetIterator<'a, WORDS, W> {
+impl<'a, const WORDS: usize, W: Word> Iterator for StaticBitSetIterator<'a, WORDS, W> {
     type Item = usize;
 
     fn next(&mut self) -> Option<usize> {
@@ -261,36 +261,36 @@ impl<'a, const WORDS: usize, W: Word> Iterator for FixedBitSetIterator<'a, WORDS
         next_bit
     }
 }
-impl<'a, const WORDS: usize, W: Word> IntoIterator for &'a FixedBitSet<WORDS, W> {
+impl<'a, const WORDS: usize, W: Word> IntoIterator for &'a StaticBitSet<WORDS, W> {
     type Item = usize;
-    type IntoIter = FixedBitSetIterator<'a, WORDS, W>;
+    type IntoIter = StaticBitSetIterator<'a, WORDS, W>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
 }
 
-impl<const WORDS: usize, W: Word> Default for FixedBitSet<WORDS, W> {
+impl<const WORDS: usize, W: Word> Default for StaticBitSet<WORDS, W> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<const WORDS: usize, W: Word> BitOrAssign<&Self> for FixedBitSet<WORDS, W> {
+impl<const WORDS: usize, W: Word> BitOrAssign<&Self> for StaticBitSet<WORDS, W> {
     fn bitor_assign(&mut self, rhs: &Self) {
         for i in 0..WORDS {
             self.words[i] |= rhs.words[i];
         }
     }
 }
-impl<const WORDS: usize, W: Word> BitAndAssign<&Self> for FixedBitSet<WORDS, W> {
+impl<const WORDS: usize, W: Word> BitAndAssign<&Self> for StaticBitSet<WORDS, W> {
     fn bitand_assign(&mut self, rhs: &Self) {
         for i in 0..WORDS {
             self.words[i] &= rhs.words[i];
         }
     }
 }
-impl<const WORDS: usize, W: Word> BitXorAssign<&Self> for FixedBitSet<WORDS, W> {
+impl<const WORDS: usize, W: Word> BitXorAssign<&Self> for StaticBitSet<WORDS, W> {
     fn bitxor_assign(&mut self, rhs: &Self) {
         for i in 0..WORDS {
             self.words[i] ^= rhs.words[i];
@@ -298,40 +298,40 @@ impl<const WORDS: usize, W: Word> BitXorAssign<&Self> for FixedBitSet<WORDS, W> 
     }
 }
 
-impl<const WORDS: usize, W: Word> BitOr for &FixedBitSet<WORDS, W> {
-    type Output = FixedBitSet<WORDS, W>;
+impl<const WORDS: usize, W: Word> BitOr for &StaticBitSet<WORDS, W> {
+    type Output = StaticBitSet<WORDS, W>;
     fn bitor(self, rhs: Self) -> Self::Output {
-        let mut result = FixedBitSet::new();
+        let mut result = StaticBitSet::new();
         for i in 0..WORDS {
             result.words[i] = self.words[i] | rhs.words[i];
         }
         result
     }
 }
-impl<const WORDS: usize, W: Word> BitAnd for &FixedBitSet<WORDS, W> {
-    type Output = FixedBitSet<WORDS, W>;
+impl<const WORDS: usize, W: Word> BitAnd for &StaticBitSet<WORDS, W> {
+    type Output = StaticBitSet<WORDS, W>;
     fn bitand(self, rhs: Self) -> Self::Output {
-        let mut result = FixedBitSet::new();
+        let mut result = StaticBitSet::new();
         for i in 0..WORDS {
             result.words[i] = self.words[i] & rhs.words[i];
         }
         result
     }
 }
-impl<const WORDS: usize, W: Word> BitXor for &FixedBitSet<WORDS, W> {
-    type Output = FixedBitSet<WORDS, W>;
+impl<const WORDS: usize, W: Word> BitXor for &StaticBitSet<WORDS, W> {
+    type Output = StaticBitSet<WORDS, W>;
     fn bitxor(self, rhs: Self) -> Self::Output {
-        let mut result = FixedBitSet::new();
+        let mut result = StaticBitSet::new();
         for i in 0..WORDS {
             result.words[i] = self.words[i] ^ rhs.words[i];
         }
         result
     }
 }
-impl<const WORDS: usize, W: Word> Not for &FixedBitSet<WORDS, W> {
-    type Output = FixedBitSet<WORDS, W>;
+impl<const WORDS: usize, W: Word> Not for &StaticBitSet<WORDS, W> {
+    type Output = StaticBitSet<WORDS, W>;
     fn not(self) -> Self::Output {
-        let mut result = FixedBitSet::new();
+        let mut result = StaticBitSet::new();
         for i in 0..WORDS {
             result.words[i] = !self.words[i];
         }

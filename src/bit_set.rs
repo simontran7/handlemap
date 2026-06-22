@@ -1,6 +1,6 @@
 mod dynamic_bit_set;
-mod fixed_bit_set;
+mod static_bit_set;
 mod word;
 
-pub use fixed_bit_set::FixedBitSet;
+pub use static_bit_set::StaticBitSet;
 pub use word::Word;
