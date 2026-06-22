@@ -130,9 +130,13 @@ impl<K: Handle, V> Index<K> for SideHandleMap<K, V> {
 }
 
 // for `map[k] = v`
-impl<K: Handle, V> IndexMut<K> for SideHandleMap<K, V> {
+impl<K: Handle, V: Clone> IndexMut<K> for SideHandleMap<K, V> {
     fn index_mut(&mut self, index: K) -> &mut V {
-        &mut self.data[index.index()]
+        let i = index.index();
+        if i >= self.data.len() {
+            self.data.resize(i + 1, self.default.clone());
+        }
+        &mut self.data[i]
     }
 }
 
