@@ -62,7 +62,7 @@ impl<const WORDS: usize, W: Word> StaticBitSet<WORDS, W> {
     }
 
     /// Returns the number of bits set.
-    pub fn len(&self) -> usize {
+    pub fn count(&self) -> usize {
         self.words.iter().map(|w| w.count_ones() as usize).sum()
     }
 
@@ -336,5 +336,158 @@ impl<const WORDS: usize, W: Word> Not for &StaticBitSet<WORDS, W> {
             result.words[i] = !self.words[i];
         }
         result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use proptest::prelude::*;
+    use std::collections::BTreeSet;
+
+    const CAPACITY: usize = 256;
+
+    #[derive(Debug, Clone)]
+    enum Op {
+        Insert(usize),
+        Remove(usize),
+        Toggle(usize),
+        Contains(usize),
+        Count,
+        IsEmpty,
+        IsFull,
+        FirstSet,
+        LastSet,
+        FirstUnset,
+        LastUnset,
+        FirstSetAfter(usize),
+        LastSetBefore(usize),
+        FirstUnsetAfter(usize),
+        LastUnsetBefore(usize),
+        Clear,
+        Iter,
+    }
+
+    const NUM_OPS: usize = 17;
+
+    fn pick_op(weights: &[u32; NUM_OPS], total: u32, roll: u32, bit: usize) -> Op {
+        let mut remaining = roll % total;
+        for (i, &w) in weights.iter().enumerate() {
+            if remaining < w {
+                return match i {
+                    0 => Op::Insert(bit),
+                    1 => Op::Remove(bit),
+                    2 => Op::Toggle(bit),
+                    3 => Op::Contains(bit),
+                    4 => Op::Count,
+                    5 => Op::IsEmpty,
+                    6 => Op::IsFull,
+                    7 => Op::FirstSet,
+                    8 => Op::LastSet,
+                    9 => Op::FirstUnset,
+                    10 => Op::LastUnset,
+                    11 => Op::FirstSetAfter(bit),
+                    12 => Op::LastSetBefore(bit),
+                    13 => Op::FirstUnsetAfter(bit),
+                    14 => Op::LastUnsetBefore(bit),
+                    15 => Op::Clear,
+                    16 => Op::Iter,
+                    _ => unreachable!(),
+                };
+            }
+            remaining -= w;
+        }
+        unreachable!()
+    }
+
+    proptest! {
+        #[test]
+        fn matches_btreeset_model(
+            raw_weights in prop::collection::vec(0u32..100, NUM_OPS..=NUM_OPS),
+            steps in prop::collection::vec((any::<u32>(), 0usize..CAPACITY), 0..500),
+        ) {
+            let mut weights = [0u32; NUM_OPS];
+            let mut any_nonzero = false;
+            for (i, &w) in raw_weights.iter().enumerate() {
+                weights[i] = w;
+                if w > 0 { any_nonzero = true; }
+            }
+            if !any_nonzero { weights[0] = 1; }
+            let total: u32 = weights.iter().sum();
+
+            let mut bs = StaticBitSet::<4, u64>::new();
+            let mut model = BTreeSet::<usize>::new();
+
+            for &(roll, bit) in &steps {
+                let op = pick_op(&weights, total, roll, bit);
+                match op {
+                    Op::Insert(i) => {
+                        bs.insert(i);
+                        model.insert(i);
+                    }
+                    Op::Remove(i) => {
+                        bs.remove(i);
+                        model.remove(&i);
+                    }
+                    Op::Toggle(i) => {
+                        bs.toggle(i);
+                        if !model.remove(&i) {
+                            model.insert(i);
+                        }
+                    }
+                    Op::Contains(i) => {
+                        assert_eq!(bs.contains(i), model.contains(&i));
+                    }
+                    Op::Count => {
+                        assert_eq!(bs.count(), model.len());
+                    }
+                    Op::IsEmpty => {
+                        assert_eq!(bs.is_empty(), model.is_empty());
+                    }
+                    Op::IsFull => {
+                        assert_eq!(bs.is_full(), model.len() == CAPACITY);
+                    }
+                    Op::FirstSet => {
+                        assert_eq!(bs.first_set(), model.first().copied());
+                    }
+                    Op::LastSet => {
+                        assert_eq!(bs.last_set(), model.last().copied());
+                    }
+                    Op::FirstUnset => {
+                        let expected = (0..CAPACITY).find(|i| !model.contains(i));
+                        assert_eq!(bs.first_unset(), expected);
+                    }
+                    Op::LastUnset => {
+                        let expected = (0..CAPACITY).rev().find(|i| !model.contains(i));
+                        assert_eq!(bs.last_unset(), expected);
+                    }
+                    Op::FirstSetAfter(i) => {
+                        let expected = ((i + 1)..CAPACITY).find(|j| model.contains(j));
+                        assert_eq!(bs.first_set_after(i), expected);
+                    }
+                    Op::LastSetBefore(i) => {
+                        let expected = (0..i).rev().find(|j| model.contains(j));
+                        assert_eq!(bs.last_set_before(i), expected);
+                    }
+                    Op::FirstUnsetAfter(i) => {
+                        let expected = ((i + 1)..CAPACITY).find(|j| !model.contains(j));
+                        assert_eq!(bs.first_unset_after(i), expected);
+                    }
+                    Op::LastUnsetBefore(i) => {
+                        let expected = (0..i).rev().find(|j| !model.contains(j));
+                        assert_eq!(bs.last_unset_before(i), expected);
+                    }
+                    Op::Clear => {
+                        bs.clear();
+                        model.clear();
+                    }
+                    Op::Iter => {
+                        let bs_bits: Vec<usize> = bs.iter().collect();
+                        let model_bits: Vec<usize> = model.iter().copied().collect();
+                        assert_eq!(bs_bits, model_bits);
+                    }
+                }
+            }
+        }
     }
 }

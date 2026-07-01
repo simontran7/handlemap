@@ -1,7 +1,7 @@
+use super::Handle;
 use std::marker::PhantomData;
 use std::ops::{Index, IndexMut};
 use std::{fmt, mem, slice};
-use super::Handle;
 
 #[derive(Clone)]
 pub struct SideHandleMap<K, V> {
@@ -26,7 +26,10 @@ pub struct IntoIter<K, V> {
 }
 
 impl<K: Handle, V> SideHandleMap<K, V> {
-    pub fn new() -> Self where V: Clone + Default {
+    pub fn new() -> Self
+    where
+        V: Clone + Default,
+    {
         Self {
             data: Vec::new(),
             default: Default::default(),
@@ -34,7 +37,10 @@ impl<K: Handle, V> SideHandleMap<K, V> {
         }
     }
 
-    pub fn with_capacity(capacity: usize) -> Self where V: Clone + Default {
+    pub fn with_capacity(capacity: usize) -> Self
+    where
+        V: Clone + Default,
+    {
         Self {
             data: Vec::with_capacity(capacity),
             default: Default::default(),
@@ -50,7 +56,10 @@ impl<K: Handle, V> SideHandleMap<K, V> {
         }
     }
 
-    pub fn add(&mut self, key: K, value: V) -> Option<V> where V: Clone {
+    pub fn add(&mut self, key: K, value: V) -> Option<V>
+    where
+        V: Clone,
+    {
         let index = key.index();
         if index < self.data.len() {
             Some(mem::replace(&mut self.data[index], value))
@@ -61,7 +70,10 @@ impl<K: Handle, V> SideHandleMap<K, V> {
         }
     }
 
-    pub fn resize(&mut self, n: usize) where V: Clone {
+    pub fn resize(&mut self, n: usize)
+    where
+        V: Clone,
+    {
         self.data.resize(n, self.default.clone());
     }
 
@@ -73,7 +85,10 @@ impl<K: Handle, V> SideHandleMap<K, V> {
         self.data.get_mut(key.index())
     }
 
-    pub fn remove(&mut self, key: K) -> Option<V> where V: Clone {
+    pub fn remove(&mut self, key: K) -> Option<V>
+    where
+        V: Clone,
+    {
         let index = key.index();
         if index < self.data.len() {
             Some(mem::replace(&mut self.data[index], self.default.clone()))
@@ -125,18 +140,14 @@ impl<K: Handle, V> SideHandleMap<K, V> {
 impl<K: Handle, V> Index<K> for SideHandleMap<K, V> {
     type Output = V;
     fn index(&self, k: K) -> &V {
-        self.data.get(k.index()).unwrap_or(&self.default)
+        &self.data[k.index()]
     }
 }
 
 // for `map[k] = v`
-impl<K: Handle, V: Clone> IndexMut<K> for SideHandleMap<K, V> {
-    fn index_mut(&mut self, index: K) -> &mut V {
-        let i = index.index();
-        if i >= self.data.len() {
-            self.data.resize(i + 1, self.default.clone());
-        }
-        &mut self.data[i]
+impl<K: Handle, V> IndexMut<K> for SideHandleMap<K, V> {
+    fn index_mut(&mut self, k: K) -> &mut V {
+        &mut self.data[k.index()]
     }
 }
 
