@@ -6,19 +6,14 @@ pub mod list;
 macro_rules! handle_impl {
     ($vis:vis $name:ident) => {
         #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-        $vis struct $name(u32);
+        $vis struct $name(core::num::NonZeroU32);
 
         impl $crate::handle_map::Handle for $name {
-            fn new(i: usize) -> Self { Self(i as u32) }
-            fn index(&self) -> usize { self.0 as usize }
-        }
-
-        impl $crate::handle_map::ReservedValue for $name {
-            fn reserved() -> Self {
-                Self(u32::MAX)
+            fn new(i: usize) -> Self {
+                Self(core::num::NonZeroU32::new(i as u32 + 1).expect("index too large"))
             }
-            fn is_reserved(&self) -> bool {
-                self.0 == u32::MAX
+            fn index(&self) -> usize {
+                (self.0.get() - 1) as usize
             }
         }
     };
