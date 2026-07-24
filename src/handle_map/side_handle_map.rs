@@ -40,9 +40,8 @@ impl<K: Handle, V> SideHandleMap<K, V> {
     }
 
     /// Inserts `value` at `key`, growing the map if needed. Slots skipped over while
-    /// growing are left absent (not a cloned/default value) — a key that was never
-    /// explicitly added is never observably present, whether that key is out of range
-    /// entirely or sitting in a gap created by adding a later, higher key.
+    /// growing are left absent, not a cloned default: a key that was never explicitly
+    /// added is never observably present, whether out of range or sitting in a gap.
     pub fn add(&mut self, key: K, value: V) -> Option<V> {
         let index = key.index();
         if index >= self.data.len() {
