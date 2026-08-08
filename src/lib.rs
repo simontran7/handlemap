@@ -1,6 +1,5 @@
 pub mod bit_set;
 pub mod handle_map;
-pub mod list;
 
 #[macro_export]
 macro_rules! handle_impl {
