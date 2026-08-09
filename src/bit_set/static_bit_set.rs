@@ -19,6 +19,20 @@ impl<const WORDS: usize, W: Word> StaticBitSet<WORDS, W> {
         }
     }
 
+    /// Creates a bit set from a slice `bits`
+    pub const fn with_bits<const N: usize>(bits: &[usize; N]) -> Self {
+        let mut words = [W::ZERO; WORDS];
+        let mut i = 0;
+        while i < N {
+            let bit = bits[i];
+            let word_idx = bit / W::BITS;
+            let bit_pos = (bit % W::BITS) as u32;
+            words[word_idx] = words[word_idx] | (W::ONE << bit_pos);
+            i += 1;
+        }
+        Self { words }
+    }
+
     /// Returns whether `bit` is in the set.
     pub fn contains(&self, bit: usize) -> bool {
         let word_idx = bit / W::BITS;
