@@ -13,7 +13,7 @@ pub struct StaticBitSetIterator<'a, const WORDS: usize, W: Word> {
 
 impl<const WORDS: usize, W: Word> StaticBitSet<WORDS, W> {
     /// Creates a new empty bit set.
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             words: [W::ZERO; WORDS],
         }
