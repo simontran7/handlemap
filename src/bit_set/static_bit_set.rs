@@ -26,8 +26,8 @@ impl<W: Word, const WORDS: usize> StaticBitSet<W, WORDS> {
         while i < N {
             let bit = bits[i];
             let word_idx = bit / W::BITS;
-            let bit_offset = (bit % W::BITS) as u32;
-            data[word_idx] = data[word_idx] | (W::ONE << bit_offset);
+            let bit_index = (bit % W::BITS) as u32;
+            data[word_idx] = data[word_idx] | (W::ONE << bit_index);
             i += 1;
         }
         Self { data }
@@ -36,29 +36,29 @@ impl<W: Word, const WORDS: usize> StaticBitSet<W, WORDS> {
     /// Returns whether `bit` is in the set.
     pub fn contains(&self, bit: usize) -> bool {
         let word_idx = bit / W::BITS;
-        let bit_offset = (bit % W::BITS) as u32;
-        (self.data[word_idx] & (W::ONE << bit_offset)) != W::ZERO
+        let bit_index = (bit % W::BITS) as u32;
+        (self.data[word_idx] & (W::ONE << bit_index)) != W::ZERO
     }
 
     /// Adds `bit` to the set.
     pub fn add(&mut self, bit: usize) {
         let word_idx = bit / W::BITS;
-        let bit_offset = (bit % W::BITS) as u32;
-        self.data[word_idx] |= W::ONE << bit_offset;
+        let bit_index = (bit % W::BITS) as u32;
+        self.data[word_idx] |= W::ONE << bit_index;
     }
 
     /// Removes `bit` from the set.
     pub fn remove(&mut self, bit: usize) {
         let word_idx = bit / W::BITS;
-        let bit_offset = (bit % W::BITS) as u32;
-        self.data[word_idx] &= !(W::ONE << bit_offset);
+        let bit_index = (bit % W::BITS) as u32;
+        self.data[word_idx] &= !(W::ONE << bit_index);
     }
 
     /// Toggles `bit`.
     pub fn toggle(&mut self, bit: usize) {
         let word_idx = bit / W::BITS;
-        let bit_offset = (bit % W::BITS) as u32;
-        self.data[word_idx] ^= W::ONE << bit_offset;
+        let bit_index = (bit % W::BITS) as u32;
+        self.data[word_idx] ^= W::ONE << bit_index;
     }
 
     /// Clears the set, removing all bits.
@@ -116,13 +116,13 @@ impl<W: Word, const WORDS: usize> StaticBitSet<W, WORDS> {
     /// Returns the smallest bit strictly greater than `bit`, or `None`.
     pub fn first_set_after(&self, bit: usize) -> Option<usize> {
         let boundary_idx = bit / W::BITS;
-        let bit_offset = (bit % W::BITS) as u32;
+        let bit_index = (bit % W::BITS) as u32;
 
         if boundary_idx >= WORDS {
             return None;
         }
 
-        let mask = W::ONES.checked_shl(bit_offset + 1).unwrap_or(W::ZERO);
+        let mask = W::ONES.checked_shl(bit_index + 1).unwrap_or(W::ZERO);
         let masked = self.data[boundary_idx] & mask;
         let tz = masked.trailing_zeros();
         if (tz as usize) < W::BITS {
@@ -142,11 +142,11 @@ impl<W: Word, const WORDS: usize> StaticBitSet<W, WORDS> {
     /// Returns the largest bit strictly less than `bit`, or `None`.
     pub fn last_set_before(&self, bit: usize) -> Option<usize> {
         let boundary_idx = (bit / W::BITS).min(WORDS);
-        let bit_offset = (bit % W::BITS) as u32;
+        let bit_index = (bit % W::BITS) as u32;
 
         if boundary_idx < WORDS {
             let mask = W::ONES
-                .checked_shr(W::BITS as u32 - bit_offset)
+                .checked_shr(W::BITS as u32 - bit_index)
                 .unwrap_or(W::ZERO);
             let masked = self.data[boundary_idx] & mask;
             let lz = masked.leading_zeros();
@@ -193,13 +193,13 @@ impl<W: Word, const WORDS: usize> StaticBitSet<W, WORDS> {
     /// Returns the smallest bit *not* in the set, strictly greater than `bit`.
     pub fn first_unset_after(&self, bit: usize) -> Option<usize> {
         let boundary_idx = bit / W::BITS;
-        let bit_offset = (bit % W::BITS) as u32;
+        let bit_index = (bit % W::BITS) as u32;
 
         if boundary_idx >= WORDS {
             return None;
         }
 
-        let mask = W::ONES.checked_shl(bit_offset + 1).unwrap_or(W::ZERO);
+        let mask = W::ONES.checked_shl(bit_index + 1).unwrap_or(W::ZERO);
         let masked = (!self.data[boundary_idx]) & mask;
         let tz = masked.trailing_zeros();
         if (tz as usize) < W::BITS {
@@ -219,11 +219,11 @@ impl<W: Word, const WORDS: usize> StaticBitSet<W, WORDS> {
     /// Returns the largest bit *not* in the set, strictly less than `bit`.
     pub fn last_unset_before(&self, bit: usize) -> Option<usize> {
         let boundary_idx = (bit / W::BITS).min(WORDS);
-        let bit_offset = (bit % W::BITS) as u32;
+        let bit_index = (bit % W::BITS) as u32;
 
         if boundary_idx < WORDS {
             let mask = W::ONES
-                .checked_shr(W::BITS as u32 - bit_offset)
+                .checked_shr(W::BITS as u32 - bit_index)
                 .unwrap_or(W::ZERO);
             let masked = (!self.data[boundary_idx]) & mask;
             let lz = masked.leading_zeros();
