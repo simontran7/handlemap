@@ -352,3 +352,44 @@ impl<W: Word, const WORDS: usize> BitXorAssign<&Self> for StaticBitSet<W, WORDS>
         }
     }
 }
+
+impl<W: Word, const WORDS: usize> BitOr for StaticBitSet<W, WORDS> {
+    type Output = StaticBitSet<W, WORDS>;
+    fn bitor(self, rhs: Self) -> Self::Output {
+        &self | &rhs
+    }
+}
+impl<W: Word, const WORDS: usize> BitAnd for StaticBitSet<W, WORDS> {
+    type Output = StaticBitSet<W, WORDS>;
+    fn bitand(self, rhs: Self) -> Self::Output {
+        &self & &rhs
+    }
+}
+impl<W: Word, const WORDS: usize> BitXor for StaticBitSet<W, WORDS> {
+    type Output = StaticBitSet<W, WORDS>;
+    fn bitxor(self, rhs: Self) -> Self::Output {
+        &self ^ &rhs
+    }
+}
+impl<W: Word, const WORDS: usize> Not for StaticBitSet<W, WORDS> {
+    type Output = StaticBitSet<W, WORDS>;
+    fn not(self) -> Self::Output {
+        !&self
+    }
+}
+
+impl<W: Word, const WORDS: usize> BitOrAssign for StaticBitSet<W, WORDS> {
+    fn bitor_assign(&mut self, rhs: Self) {
+        *self |= &rhs;
+    }
+}
+impl<W: Word, const WORDS: usize> BitAndAssign for StaticBitSet<W, WORDS> {
+    fn bitand_assign(&mut self, rhs: Self) {
+        *self &= &rhs;
+    }
+}
+impl<W: Word, const WORDS: usize> BitXorAssign for StaticBitSet<W, WORDS> {
+    fn bitxor_assign(&mut self, rhs: Self) {
+        *self ^= &rhs;
+    }
+}
