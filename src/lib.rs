@@ -12,7 +12,7 @@ macro_rules! handle_impl {
         #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
         $vis struct $name(core::num::NonZeroU32);
 
-        impl $crate::handle_map::Handle for $name {
+        impl $crate::Handle for $name {
             fn new(i: usize) -> Self {
                 Self(core::num::NonZeroU32::new(i as u32 + 1).expect("index too large"))
             }
