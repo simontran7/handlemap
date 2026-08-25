@@ -39,21 +39,14 @@ impl<K: Handle, V> SideHandleMap<K, V> {
         }
     }
 
-    /// Inserts `value` at `key`, growing the map if needed. Slots skipped over while
-    /// growing are left absent, not a cloned default: a key that was never explicitly
-    /// added is never observably present, whether out of range or sitting in a gap.
-    pub fn add(&mut self, key: K, value: V) -> Option<V> {
-        let index = key.index();
-        if index >= self.data.len() {
-            self.data.resize_with(index + 1, || None);
-        }
-        self.data[index].replace(value)
+    pub fn count(&self) -> usize {
+        self.data.len()
     }
 
-    pub fn resize(&mut self, n: usize) {
-        self.data.resize_with(n, || None);
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
     }
-
+    
     pub fn get(&self, key: K) -> Option<&V> {
         self.data.get(key.index())?.as_ref()
     }
@@ -62,16 +55,24 @@ impl<K: Handle, V> SideHandleMap<K, V> {
         self.data.get_mut(key.index())?.as_mut()
     }
 
+    pub fn contains_key(&self, key: K) -> bool {
+        self.get(key).is_some()
+    }
+    
+    pub fn add(&mut self, key: K, value: V) -> Option<V> {
+        let index = key.index();
+        if index >= self.data.len() {
+            self.data.resize_with(index + 1, || None);
+        }
+        self.data[index].replace(value)
+    }
+
     pub fn remove(&mut self, key: K) -> Option<V> {
         self.data.get_mut(key.index())?.take()
     }
-
-    pub fn count(&self) -> usize {
-        self.data.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.data.is_empty()
+    
+    pub fn resize(&mut self, n: usize) {
+        self.data.resize_with(n, || None);
     }
 
     pub fn keys(&self) -> impl Iterator<Item = K> + '_ {
