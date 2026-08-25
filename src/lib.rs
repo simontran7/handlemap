@@ -14,8 +14,9 @@ macro_rules! handle_impl {
 
         impl $crate::Handle for $name {
             fn new(i: usize) -> Self {
-                Self(core::num::NonZeroU32::new(i as u32 + 1).expect("index too large"))
+                Self(core::num::NonZeroU32::new(u32::try_from(i).expect("index too large") + 1).expect("index too large"))
             }
+            
             fn index(&self) -> usize {
                 (self.0.get() - 1) as usize
             }
