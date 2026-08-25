@@ -8,6 +8,6 @@ Add the following to your project's `Cargo.toml` file:
 
 ```
 [dependencies]
-soup = { git = "https://github.com/simontran7/handlemap" }
+handlemap = { git = "https://github.com/simontran7/handlemap" }
 ```
 
