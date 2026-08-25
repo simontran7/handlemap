@@ -1,4 +1,3 @@
-pub mod bit_set;
 pub mod handle_map;
 
 #[macro_export]
