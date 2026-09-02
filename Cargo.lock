@@ -101,6 +101,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "handlemap"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.15.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -379,13 +386,6 @@ dependencies = [
  "serde",
  "serde_core",
  "zmij",
-]
-
-[[package]]
-name = "soup"
-version = "0.1.0"
-dependencies = [
- "proptest",
 ]
 
 [[package]]
