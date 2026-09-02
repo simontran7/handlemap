@@ -171,6 +171,16 @@ impl<K: Handle + fmt::Debug, V: fmt::Debug> fmt::Debug for SideHandleMap<K, V> {
     }
 }
 
+// for `map_a == map_b`
+// NOTE: manually derived, since `#[derive(PartialEq)]` would add
+// an unwanted `K: PartialEq` bound via the `PhantomData<K>` field.
+impl<K: Handle, V: PartialEq> PartialEq for SideHandleMap<K, V> {
+    fn eq(&self, other: &Self) -> bool {
+        self.data == other.data
+    }
+}
+impl<K: Handle, V: Eq> Eq for SideHandleMap<K, V> {}
+
 // for `iter.next()` on shared references
 impl<'a, K: Handle, V> Iterator for Iter<'a, K, V> {
     type Item = (K, &'a V);
